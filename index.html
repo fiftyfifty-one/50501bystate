@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>State Socials Map</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/topojson@3"></script>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .state { fill: #ccc; stroke: #fff; cursor: pointer; }
+    .state:hover { fill: #aaa; }
+    .tooltip {
+      position: absolute;
+      background-color: #fff;
+      padding: 10px;
+      border: 1px solid #333;
+      border-radius: 5px;
+      pointer-events: auto;
+      max-width: 300px;
+      z-index: 10;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+  </style>
+</head>
+<body>
+  <h1>50501 by State</h1>
+  <svg id="map" width="960" height="600"></svg>
+  <div id="tooltip" class="tooltip" style="display: none;"></div>
+
+  <script>
+    const stateData = {
+  "Arkansas": {
+    "Bluesky": "https://bsky.app/profile/50501arkansas.bsky.social",
+    "Instagram": "https://Instagram.com/@50501_Arkansas",
+    "Facebook": "https://www.facebook.com/profile.php?id=61573384583685&mibextid=ZbWKwL",
+    "Reddit": "https://www.reddit.com/r/50501Arkansas/"
+  },
+  "California": {
+    "Reddit": "https://www.reddit.com/r/50501California/",
+    "Bluesky": "https://bsky.app/profile/50501california.bsky.social",
+    "Instagram": "https://www.instagram.com/50501california",
+    "Facebook": "https://www.facebook.com/share/g/1EdFuureaR/",
+    "Discord": "https://discord.gg/6DCVx72AsS",
+    "TikTok": "https://www.instagram.com/50501california",
+    "Website": "https://50501.ca/home",
+    "LinkTree": "https://linktr.ee/50501ca",
+    "MailingList": "https://docs.google.com/forms/d/e/1FAIpQLSc_WPxWqsFvJ_UXoBfFRx9gsT50L9ae9_UwxOT5ef4oi4x-Mg/viewform"
+  },
+  "Colorado": {
+    "Bluesky": "https://bsky.app/profile/50501colorado.bsky.social",
+    "Instagram": "https://www.instagram.com/50501.colorado",
+    "Facebook": "https://www.facebook.com/groups/999415635389182",
+    "LinkTree": "https://linktr.ee/50501colorado",
+    "Events Calendar": "https://airtable.com/appGxG7wUCeKACDkr/shrOw0Pr6gP58l63E"
+  },
+  "Connecticut": {
+    "Reddit": "https://www.reddit.com/r/CT50501/",
+    "Bluesky": "https://bsky.app/profile/officialct50501.bsky.social",
+    "Facebook": "https://www.facebook.com/groups/ct50501",
+    "TikTok": "https://www.tiktok.com/@officialct50501",
+    "LinkTree": "https://linktr.ee/ct50501",
+    "Email": "ct50501movement@gmail.com"
+  },
+  "Florida": {
+    "Bluesky": "https://bsky.app/profile/orlando50501.bsky.social",
+    "Instagram": "https://www.instagram.com/orlando.50501/"
+  },
+  "Georgia": {
+    "Reddit": "https://www.reddit.com/r/50501Ga/",
+    "Bluesky": "https://bsky.app/profile/50501ga.bsky.social",
+    "Instagram": "https://www.instagram.com/50501_ga",
+    "Facebook": "https://www.facebook.com/groups/3506230256175502",
+    "Discord": "50501 Georgia",
+    "TikTok": "https://www.tiktok.com/@50501ga",
+    "Website": "https://gafiftyfifty.one/",
+    "LinkTree": "https://linktr.ee/gafiftyfifty.one",
+    "Forum": "https://forum.gafiftyfifty.one/forum/",
+    "Meetup": "https://www.meetup.com/50501-geogia/",
+    "Youtube": "https://www.youtube.com/@fiftyfiftyonega"
+  },
+  "Hawaii": {
+    "Reddit": "https://www.reddit.com/r/Oahu50501/",
+    "Bluesky": "https://bsky.app/profile/50501hi.bsky.social",
+    "Instagram": "https://www.instagram.com/50501hi/",
+    "Discord": "https://discord.gg/J6BZqZn5HW",
+    "LinkTree": "https://linktr.ee/50501hawaii",
+    "Event Calendar": "https://calendar.google.com/calendar/u/0?cid=NTA1MDFoYXdhaWlAZ21haWwuY29t",
+    "Email": "50501hawaii@gmail.com"
+  },
+  "Idaho": {
+    "Reddit": "https://www.reddit.com/r/idaho50501/",
+    "Bluesky": "https://bsky.app/profile/idaho50501.bsky.social",
+    "Instagram": "https://www.instagram.com/idaho50501",
+    "Facebook": "https://www.facebook.com/share/1E27JmEMXW/",
+    "TikTok": "https://www.tiktok.com/@idaho.50501",
+    "Website": "https://idaho50501.com/",
+    "LinkTree": "https://linktr.ee/idaho50501",
+    "Substack": "https://substack.com/@idaho50501",
+    "Youtube": "https://substack.com/@idaho50501",
+    "Email": "idaho50501@mailfence.com"
+  },
+  "Indiana": {
+    "Reddit": "https://www.reddit.com/r/indiana50501/",
+    "Bluesky": "https://bsky.app/profile/indy50501.bsky.social",
+    "Facebook": "https://www.facebook.com/groups/1293355721994098",
+    "TikTok": "https://linktr.ee/IN50501",
+    "Website": "https://in50501.blogspot.com/",
+    "LinkTree": "https://linktr.ee/IN50501",
+    "Youtube": "https://www.youtube.com/@Indianafiftyfiftyone",
+    "Email": "indiana50501@gmail.com",
+    "Mastodon": "https://mastodon.social/@indy50501"
+  },
+  "Iowa": {
+    "Reddit": "https://www.reddit.com/r/50501_Iowa/",
+    "Bluesky": "https://bsky.app/profile/50501-iowa.bsky.social",
+    "Instagram": "https://www.instagram.com/50501iowa/",
+    "Facebook": "https://www.facebook.com/groups/2082385485567398/",
+    "Discord": "https://discord.gg/8SPsaUqv",
+    "LinkTree": "https://linktr.ee/50501iowacoalition"
+  },
+  "Kentucky": {
+    "Bluesky": "https://bsky.app/profile/50501ky.bsky.social",
+    "Instagram": "https://www.instagram.com/50501ky/",
+    "Facebook": "https://www.facebook.com/50501ky/",
+    "Website": "https://www.50501ky.com/"
+  },
+  "Louisiana": {
+    "Instagram": "https://www.instagram.com/Lafiftyfiftyone",
+    "Facebook": "https://www.facebook.com/groups/1161736522315591/",
+    "TikTok": "https://www.tiktok.com/@la505015",
+    "Website": "https://www.la50501.org/",
+    "LinkTree": "https://linktr.ee/lafiftyfiftyone",
+    "Substack": "https://substack.com/@lafiftyfiftyone"
+  },
+  "Maryland": {
+    "Reddit": "https://www.reddit.com/r/FreeStateCoalition/",
+    "Bluesky": "https://bsky.app/profile/freestatecoalition.bsky.social",
+    "Instagram": "https://www.instagram.com/freestatecoalition/",
+    "Facebook Page": "https://www.facebook.com/freestatecoalition/",
+    "Facebook Group": "https://www.facebook.com/freestatecoalition/",
+    "Website": "https://freestatecoalition.org/",
+  },
+  "Massachusetts": {
+    "Bluesky": "https://bsky.app/profile/mass50501.bsky.social",
+    "Facebook": "https://www.facebook.com/mass50501/",
+    "Website": "https://www.mass50501.com/",
+  },
+  "Michigan": {
+    "Bluesky": "https://bsky.app/profile/50501mi.bsky.social",
+    "Instagram": "https://www.instagram.com/50501MI/",
+    "Facebook": "https://www.facebook.com/groups/629024679621100",
+    "TikTok": "https://www.tiktok.com/@50501mi",
+    "LinkTree": "https://linktr.ee/50501michigan"
+  },
+  "Minnesota": {
+    "Reddit": "https://www.reddit.com/user/Minnesota50501/",
+    "Bluesky": "https://bsky.app/profile/mn50501.bsky.social",
+    "Instagram": "https://www.instagram.com/minnesota50501",
+    "Facebook": "https://www.facebook.com/groups/50501minnesota/",
+    "TikTok": "https://www.tiktok.com/@50501minnesota",
+    "Website": "https://50501minnesota.wordpress.com/",
+    "LinkTree": "https://linktr.ee/mn50501",
+    "Email": "contactMN50501@gmail.com"
+  },
+  "Nebraska": {
+    "Facebook": "https://www.facebook.com/profile.php?id=61573086321072&rdid=0FSRxs0nRePFyibT&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1BvJkGVQDs%2F"
+  },
+  "Nevada": {
+    "Reddit": "https://www.reddit.com/r/50501nnv",
+    "Bluesky": "https://bsky.app/profile/50501nnv.bsky.social",
+    "Instagram": "https://www.instagram.com/50501nnv/",
+    "Facebook": "https://www.facebook.com/profile.php?id=61573504033161",
+    "LinkTree": "Under construction"
+  },
+  "New Hampshire": {
+    "Bluesky": "https://bsky.app/profile/nh50501.bsky.social",
+    "Facebook": "https://www.facebook.com/profile.php?id=61573220262292&rdid=onOOO1p1elUnWvF7&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1CMCqMGL6a%2F%3Fmibextid%3DwwXIfr"
+  },
+  "New Jersey": {
+    "Reddit": "https://www.reddit.com/r/NJ50501/s/yXDXMukmCZ",
+    "Bluesky": "https://bsky.app/profile/nj50501.bsky.social",
+    "Instagram": "https://www.instagram.com/nj50501",
+    "Facebook": "https://www.facebook.com/groups/942758818047796/?ref=share&mibextid=NSMWBT",
+    "Discord": "https://discord.gg/mrDnC8eNdZ",
+    "TikTok": "https://www.tiktok.com/@new.jersey.50501",
+    "Website": "https://www.nj50501.com",
+    "LinkTree": "https://linktr.ee/nj50501"
+  },
+  "New Mexico": {
+    "Instagram": "https://www.instagram.com/new_mexico_protests"
+  },
+  "North Carolina": {
+    "Reddit": "https://www.reddit.com/r/50501NC/",
+    "Bluesky": "https://bsky.app/profile/50501nc.bsky.social",
+    "Instagram": "https://www.instagram.com/50501nc/",
+    "Threads": "https://www.threads.net/@50501nc",
+    "Facebook": "https://www.facebook.com/profile.php",
+    "TikTok": "https://www.tiktok.com/@official50501nc",
+    "Website": "https://www.50501nc.com/",
+    "LinkTree": "https://linktr.ee/50501NC",
+    "Email": "fiftyfiftyone.nc@proton.me"
+  },
+  "Ohio": {
+    "Reddit": "https://www.reddit.com/user/OHIO50501/",
+    "Bluesky": "https://bsky.app/profile/ohio50501.bsky.social",
+    "Instagram": "https://www.instagram.com/ohio_50501/?hl=en",
+    "Facebook": "https://www.50501oh.io/",
+    "Website": "https://www.50501oh.io/",
+    "LinkTree": "https://linktr.ee/"
+  },
+  "Oklahoma": {
+    "Bluesky": "https://bsky.app/profile/oklahoma50501.bsky.social",
+    "Instagram": "https://www.instagram.com/oklahoma50501/"
+  },
+  "Oregon": {
+    "Bluesky": "https://bsky.app/profile/oregon50501.bsky.social",
+    "Instagram": "https://www.instagram.com/",
+    "Facebook": "https://www.facebook.com/groups/3918686645113137/?_rdr",
+    "LinkTree": "https://linktr.ee/50501Oregon",
+    "Email": "HelloOR50501@proton.me",
+    "Reddit - Portland": "https://www.reddit.com/r/50501Portland/",
+    "BlueSky - Portland": "https://bsky.app/profile/pdxoregon50501.bsky.social",
+    "Instagram - Portland": "https://www.instagram.com/50501portlandor/",
+    "Facebook - Portland": "https://www.facebook.com/profile.php?id=61573405906418&mibextid=wwXIfr",
+    "Reddit - Eugene": "https://www.reddit.com/r/50501EugeneOR/",
+    "Facebook - Salem": "https://www.facebook.com/groups/518053944245692/",
+    "Facebook - Jackson County": "https://www.facebook.com/groups/9901966103150230/",
+    "Bluesky - Benton County": "https://bsky.app/profile/bentoncounty50501.bsky.social",
+  },
+  "Pennsylvania": {
+    "Reddit": "https://www.reddit.com/r/50501Pennsylvania/",
+    "Bluesky": "https://bsky.app/profile/50501pennsylvania.bsky.social",
+    "Pittsburgh": {
+      "Reddit": "https://www.reddit.com/r/50501Pittsburgh/",
+      "Bluesky": "https://bsky.app/profile/50501pittsburgh.bsky.social"
+    }
+  },
+  "South Carolina": {
+    "Bluesky": "https://bsky.app/profile/50501-sc.bsky.social",
+    "Instagram": "https://www.instagram.com/50501_sc",
+    "Facebook": "https://www.facebook.com/groups/1010138597842059",
+    "TikTok": "https://www.tiktok.com/@50501.sc?is_from_webapp=1&sender_device=pc",
+    "LinkTree": "https://linktr.ee/50501SC"
+  },
+  "South Dakota": {
+    "Reddit": "https://www.reddit.com/r/50501SouthDakota/",
+    "Bluesky": "https://bsky.app/profile/50501southdakota.bsky.social",
+    "Facebook": "https://www.facebook.com/groups/947117954193279/"
+  },
+  "Utah": {
+    "Reddit": "https://www.reddit.com/r/50501utah/",
+    "Bluesky": "https://bsky.app/profile/utah50501.bsky.social",
+    "Instagram": "https://www.instagram.com/utah50501/",
+    "TikTok": "Utah50501",
+    "Website": "https://www.utah50501.com/",
+    "LinkTree": "https://linktr.ee/utah50501"
+  },
+  "Vermont": {
+    "Reddit": "https://www.reddit.com/r/VTprotests/",
+    "Bluesky": "https://bsky.app/profile/50501vt.bsky.social",
+    "Instagram": "https://www.instagram.com/50501vt",
+    "Facebook (private group)": "https://www.facebook.com/groups/50501movementvermont/",
+    "Facebook public page": "https://www.facebook.com/50501vtInformation",
+    "Discord": "https://discord.gg/Q85AsUP6",
+    "Website": "https://50501vermont.com/",
+    "LinkTree": "https://linktr.ee/50501vt"
+  },
+  "Virginia": {
+    "Reddit": "https://www.reddit.com/user/Virginia50501/",
+    "Bluesky": "https://bsky.app/profile/virginia50501.bsky.social",
+    "Instagram": "https://www.instagram.com/50501.virginia",
+    "Facebook": "https://www.tiktok.com/@50501.va",
+    "TikTok": "https://www.tiktok.com/@50501.va"
+  },
+  "Washington": {
+    "Reddit": "https://www.reddit.com/r/EvergreenResistance/",
+    "Instagram": "https://www.instagram.com/50501wa",
+    "Threads": "https://www.threads.net/@50501wa",
+    "Facebook": "https://www.facebook.com/share/g/1BHTr3UeVa/?mibextid=wwXIfr",
+    "Website": "https://evergreenresistance.org",
+    "SIGNAL": "https://signal.group/#CjQKIEu4ZvMpcaSfslbdOftpDoAu8mCXxborEQDVY7FhuytlEhCaDXug84BemEKyU4Q547lS",
+    "Email": "EvergreenResistance@proton.me"
+  },
+  "Wisconsin": {
+    "Bluesky": "https://bsky.app/profile/50501wi.bsky.social",
+    "Instagram": "https://www.instagram.com/50501wi/",
+    "BlueSky - Milwaukee": "https://bsky.app/profile/50501-mke.bsky.social",
+    "Instagram - Milwaukee": "https://www.instagram.com/50501mke/",
+  }
+};
+
+    const mapSvg = d3.select("#map");
+    const tooltip = d3.select("#tooltip");
+
+    d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
+      const states = topojson.feature(us, us.objects.states);
+
+      const projection = d3.geoAlbersUsa().scale(1300).translate([480, 300]);
+      const path = d3.geoPath().projection(projection);
+
+      mapSvg.selectAll(".state")
+        .data(states.features)
+        .enter().append("path")
+        .attr("class", "state")
+        .attr("d", path)
+        .on("click", function(event, d) {
+          event.stopPropagation();
+          const stateName = d.properties.name;
+          const data = stateData[stateName];
+
+          if (!data) {
+            tooltip.html(`<strong>${stateName}</strong><br>No data available.`)
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY + 10) + "px")
+              .style("display", "block");
+            return;
+          }
+
+          let content = `<strong>${stateName}</strong><br>`;
+          for (const [platform, link] of Object.entries(data)) {
+            if (link) {
+              content += `${platform}: <a href="${link}" target="_blank">${link}</a><br>`;
+            }
+          }
+          tooltip.html(content)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY + 10) + "px")
+            .style("display", "block");
+        });
+
+      d3.select("body").on("click", () => {
+        tooltip.style("display", "none");
+      });
+    });
+  </script>
+</body>
+</html>
